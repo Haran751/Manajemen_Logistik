@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/wms_model.dart';
 import '../providers/wms_provider.dart';
 import '../widgets/barcode_painter.dart';
+import 'scanner_screen.dart';
 
 class MasterBarangScreen extends StatefulWidget {
   const MasterBarangScreen({super.key});
@@ -86,13 +87,26 @@ class _MasterBarangScreenState extends State<MasterBarangScreen> {
                         ),
                         child: IconButton(
                           icon: const Icon(Icons.qr_code_scanner, color: Color(0xFFFF6B00), size: 22),
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Menjalankan Quick Scan Barcode...'),
-                                duration: Duration(seconds: 2),
-                              ),
+                          onPressed: () async {
+                            final scannedCode = await Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const ScannerScreen()),
                             );
+
+                            if (scannedCode != null) {
+                              _searchController.text = scannedCode;
+                              provider.setSearchQuery(scannedCode);
+                              
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Pencarian: $scannedCode'),
+                                    backgroundColor: const Color(0xFF10B981),
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                              }
+                            }
                           },
                         ),
                       ),

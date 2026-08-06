@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/wms_model.dart';
 import '../providers/wms_provider.dart';
 import '../widgets/barcode_painter.dart';
+import 'scanner_screen.dart'; // Add this import
 
 class InboundScreen extends StatefulWidget {
   const InboundScreen({super.key});
@@ -49,23 +50,32 @@ class _InboundScreenState extends State<InboundScreen> with SingleTickerProvider
     super.dispose();
   }
 
-  void _triggerScanSuccess() {
-    setState(() {
-      _skuController.text = 'BRG-00123';
-      _nameController.text = 'Wireless Scanner Zebra';
-      _brandController.text = 'Zebra';
-      _categoryController.text = 'Elektronik';
-      _locationController.text = 'Rack A-03';
-      _originController.text = 'Indonesia';
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Barcode Terdeteksi: BRG-00123 (Wireless Scanner Zebra)'),
-        backgroundColor: Color(0xFF10B981),
-        duration: Duration(seconds: 2),
-      ),
+  Future<void> _openRealScanner() async {
+    final scannedCode = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ScannerScreen()),
     );
+
+    if (scannedCode != null) {
+      setState(() {
+        _skuController.text = scannedCode;
+        _nameController.text = 'Scanned Product';
+        _brandController.text = 'Unknown Brand';
+        _categoryController.text = 'General';
+        _locationController.text = 'Unassigned';
+        _originController.text = 'Unknown';
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Barcode Terdeteksi: $scannedCode'),
+            backgroundColor: const Color(0xFF10B981),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -89,7 +99,7 @@ class _InboundScreenState extends State<InboundScreen> with SingleTickerProvider
             children: [
               // Scanner Camera Viewfinder Section
               GestureDetector(
-                onTap: _triggerScanSuccess,
+                onTap: _openRealScanner,
                 child: Container(
                   height: 180,
                   width: double.infinity,
