@@ -3,8 +3,9 @@ import 'package:provider/provider.dart';
 import '../models/wms_model.dart';
 import '../providers/wms_provider.dart';
 import '../widgets/barcode_painter.dart';
-import 'scanner_screen.dart'; // Add this import
+import 'scanner_screen.dart'; // Import scanner real (menggunakan kamera)
 
+// Layar untuk proses penerimaan barang (Inbound)
 class InboundScreen extends StatefulWidget {
   const InboundScreen({super.key});
 
@@ -13,9 +14,10 @@ class InboundScreen extends StatefulWidget {
 }
 
 class _InboundScreenState extends State<InboundScreen> with SingleTickerProviderStateMixin {
+  // Controller untuk animasi garis scanner yang bergerak naik-turun
   late AnimationController _scanAnimationController;
 
-  // Form Controllers
+  // ==== Controllers untuk Form Input Inbound ====
   final _skuController = TextEditingController(text: 'BRG-00128');
   final _nameController = TextEditingController(text: 'Wireless Scanner Zebra');
   final _brandController = TextEditingController(text: 'Zebra');
@@ -29,6 +31,7 @@ class _InboundScreenState extends State<InboundScreen> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
+    // Inisialisasi animasi scanner dengan durasi bolak-balik 2 detik
     _scanAnimationController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
@@ -37,6 +40,7 @@ class _InboundScreenState extends State<InboundScreen> with SingleTickerProvider
 
   @override
   void dispose() {
+    // Mematikan semua controller untuk menghindari kebocoran memori (memory leak)
     _scanAnimationController.dispose();
     _skuController.dispose();
     _nameController.dispose();
@@ -50,15 +54,17 @@ class _InboundScreenState extends State<InboundScreen> with SingleTickerProvider
     super.dispose();
   }
 
+  // Fungsi untuk membuka layar Scanner Barcode sungguhan menggunakan kamera
   Future<void> _openRealScanner() async {
     final scannedCode = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const ScannerScreen()),
     );
 
+    // Jika berhasil mendeteksi barcode
     if (scannedCode != null) {
       setState(() {
-        _skuController.text = scannedCode;
+        _skuController.text = scannedCode; // Mengisi kolom SKU otomatis
         _nameController.text = 'Scanned Product';
         _brandController.text = 'Unknown Brand';
         _categoryController.text = 'General';
@@ -66,11 +72,12 @@ class _InboundScreenState extends State<InboundScreen> with SingleTickerProvider
         _originController.text = 'Unknown';
       });
 
+      // Menampilkan snackbar sukses
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Barcode Terdeteksi: $scannedCode'),
-            backgroundColor: const Color(0xFF10B981),
+            backgroundColor: const Color(0xFF10B981), // Warna hijau
             duration: const Duration(seconds: 2),
           ),
         );
@@ -97,9 +104,9 @@ class _InboundScreenState extends State<InboundScreen> with SingleTickerProvider
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Scanner Camera Viewfinder Section
+              // ==== Bagian Kamera Simulator / Tombol Buka Kamera Scanner ====
               GestureDetector(
-                onTap: _openRealScanner,
+                onTap: _openRealScanner, // Membuka scanner saat diklik
                 child: Container(
                   height: 180,
                   width: double.infinity,
@@ -117,13 +124,13 @@ class _InboundScreenState extends State<InboundScreen> with SingleTickerProvider
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      // Simulated Camera Viewfinder Background Image/Graphic
+                      // Ikon latar belakang semi-transparan
                       Opacity(
                         opacity: 0.25,
                         child: Icon(Icons.photo_camera_outlined, size: 100, color: Colors.white.withValues(alpha: 0.5)),
                       ),
 
-                      // Scanning Frame Corners
+                      // Bingkai (frame) area scan di tengah
                       Container(
                         width: 220,
                         height: 110,
@@ -133,7 +140,7 @@ class _InboundScreenState extends State<InboundScreen> with SingleTickerProvider
                         ),
                         child: Stack(
                           children: [
-                            // Animated Laser Line
+                            // Garis Laser yang bergerak naik-turun (Animasi)
                             AnimatedBuilder(
                               animation: _scanAnimationController,
                               builder: (context, child) {
@@ -161,7 +168,7 @@ class _InboundScreenState extends State<InboundScreen> with SingleTickerProvider
                         ),
                       ),
 
-                      // Center Target Icon Button
+                      // Tombol ikon QR tengah
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: const BoxDecoration(
@@ -171,7 +178,7 @@ class _InboundScreenState extends State<InboundScreen> with SingleTickerProvider
                         child: const Icon(Icons.qr_code_scanner, color: Colors.white, size: 26),
                       ),
 
-                      // Overlay Instruction Text
+                      // Teks panduan di bagian bawah container scanner
                       Positioned(
                         bottom: 12,
                         child: Container(
@@ -181,7 +188,7 @@ class _InboundScreenState extends State<InboundScreen> with SingleTickerProvider
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: const Text(
-                            'Tap kamera untuk simulasi Scan Barcode',
+                            'Tap kamera untuk mulai Scan Barcode',
                             style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w500),
                           ),
                         ),
@@ -192,7 +199,7 @@ class _InboundScreenState extends State<InboundScreen> with SingleTickerProvider
               ),
               const SizedBox(height: 20),
 
-              // Form Add Product Container
+              // ==== Formulir Data Barang Masuk ====
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -219,15 +226,15 @@ class _InboundScreenState extends State<InboundScreen> with SingleTickerProvider
                     ),
                     const SizedBox(height: 14),
 
-                    // SKU Field
+                    // Input Field SKU Barang
                     _buildFormField(
                       label: 'SKU',
                       controller: _skuController,
-                      onChanged: (val) => setState(() {}),
+                      onChanged: (val) => setState(() {}), // Refresh preview barcode saat diubah
                     ),
                     const SizedBox(height: 10),
 
-                    // Row 1: Product Name & Brand
+                    // Baris 1: Nama Barang & Merek
                     Row(
                       children: [
                         Expanded(
@@ -248,7 +255,7 @@ class _InboundScreenState extends State<InboundScreen> with SingleTickerProvider
                     ),
                     const SizedBox(height: 10),
 
-                    // Row 2: Category & Quantity Received
+                    // Baris 2: Kategori & Kuantitas (Jumlah)
                     Row(
                       children: [
                         Expanded(
@@ -262,14 +269,14 @@ class _InboundScreenState extends State<InboundScreen> with SingleTickerProvider
                           child: _buildFormField(
                             label: 'Quantity Received',
                             controller: _qtyController,
-                            keyboardType: TextInputType.number,
+                            keyboardType: TextInputType.number, // Keyboard khusus angka
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 10),
 
-                    // Row 3: Supplier & Receive Date
+                    // Baris 3: Supplier & Tanggal Diterima
                     Row(
                       children: [
                         Expanded(
@@ -289,7 +296,7 @@ class _InboundScreenState extends State<InboundScreen> with SingleTickerProvider
                     ),
                     const SizedBox(height: 10),
 
-                    // Row 4: Storage Location & Country of Origin
+                    // Baris 4: Lokasi Penyimpanan & Negara Asal
                     Row(
                       children: [
                         Expanded(
@@ -313,7 +320,7 @@ class _InboundScreenState extends State<InboundScreen> with SingleTickerProvider
               ),
               const SizedBox(height: 20),
 
-              // Barcode Label Preview Card (As in Mockup 3)
+              // ==== Kotak Preview Label Barcode ====
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
@@ -340,7 +347,7 @@ class _InboundScreenState extends State<InboundScreen> with SingleTickerProvider
                     ),
                     const SizedBox(height: 14),
 
-                    // Barcode Render Box
+                    // Widget render gambar barcode aktual (menggunakan widget BarcodeWidget kustom/luar)
                     BarcodeWidget(
                       code: _skuController.text.isNotEmpty ? _skuController.text : 'BRG-00000',
                       width: 250,
@@ -348,7 +355,7 @@ class _InboundScreenState extends State<InboundScreen> with SingleTickerProvider
                     ),
                     const SizedBox(height: 12),
 
-                    // Details Summary Row
+                    // Informasi di sekitar barcode
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -372,15 +379,15 @@ class _InboundScreenState extends State<InboundScreen> with SingleTickerProvider
                     ),
                     const SizedBox(height: 16),
 
-                    // Action Button: Save & Print Barcode
+                    // ==== Tombol Simpan (dan Cetak) ====
                     SizedBox(
                       width: double.infinity,
                       height: 44,
                       child: ElevatedButton.icon(
-                        onPressed: _saveAndPrintBarcode,
+                        onPressed: _saveAndPrintBarcode, // Memanggil fungsi simpan
                         icon: const Icon(Icons.print_outlined, color: Colors.white),
                         label: const Text(
-                          'Print Barcode',
+                          'Simpan dan Print Barcode',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
@@ -407,10 +414,11 @@ class _InboundScreenState extends State<InboundScreen> with SingleTickerProvider
     );
   }
 
+  // Fungsi utilitas (helper) untuk membangun kolom input teks
   Widget _buildFormField({
     required String label,
     required TextEditingController controller,
-    TextInputType keyboardType = TextInputType.text,
+    TextInputType keyboardType = TextInputType.text, // Tipe keyboard default adalah teks
     Function(String)? onChanged,
   }) {
     return Column(
@@ -426,7 +434,7 @@ class _InboundScreenState extends State<InboundScreen> with SingleTickerProvider
         ),
         const SizedBox(height: 4),
         Container(
-          height: 40,
+          height: 40, // Tinggi tetap untuk input
           decoration: BoxDecoration(
             color: const Color(0xFFF8FAFC),
             borderRadius: BorderRadius.circular(8),
@@ -440,7 +448,7 @@ class _InboundScreenState extends State<InboundScreen> with SingleTickerProvider
             decoration: const InputDecoration(
               isDense: true,
               contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-              border: InputBorder.none,
+              border: InputBorder.none, // Menghilangkan garis bawah default TextField
             ),
           ),
         ),
@@ -448,10 +456,14 @@ class _InboundScreenState extends State<InboundScreen> with SingleTickerProvider
     );
   }
 
+  // Fungsi yang dieksekusi saat tombol simpan ditekan
   void _saveAndPrintBarcode() {
+    // Mendapatkan instance dari WmsProvider (false untuk menghindari re-render seluruh form)
     final provider = Provider.of<WmsProvider>(context, listen: false);
+    // Mengurai (parsing) teks qty jadi int, default 1 jika gagal
     final qty = int.tryParse(_qtyController.text) ?? 1;
 
+    // Membuat objek InboundRecord berdasarkan data form
     final record = InboundRecord(
       id: 'IN-${DateTime.now().millisecondsSinceEpoch}',
       sku: _skuController.text,
@@ -465,8 +477,10 @@ class _InboundScreenState extends State<InboundScreen> with SingleTickerProvider
       countryOfOrigin: _originController.text,
     );
 
+    // Menyimpan data produk ke sistem state (provider)
     provider.addProductInbound(record);
 
+    // Menampilkan notifikasi sukses kepada pengguna
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Penerimaan ${_nameController.text} ($qty unit) berhasil disimpan & mencetak label barcode!'),

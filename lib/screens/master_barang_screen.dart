@@ -5,6 +5,7 @@ import '../providers/wms_provider.dart';
 import '../widgets/barcode_painter.dart';
 import 'scanner_screen.dart';
 
+// Layar Master Barang yang menampilkan seluruh inventaris gudang
 class MasterBarangScreen extends StatefulWidget {
   const MasterBarangScreen({super.key});
 
@@ -13,22 +14,27 @@ class MasterBarangScreen extends StatefulWidget {
 }
 
 class _MasterBarangScreenState extends State<MasterBarangScreen> {
+  // Controller untuk field pencarian
   final TextEditingController _searchController = TextEditingController();
 
   @override
   void dispose() {
+    // Mematikan controller saat layar dihancurkan untuk mencegah memory leak
     _searchController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    // Menghubungkan ke WmsProvider untuk mendapatkan data state
     final provider = Provider.of<WmsProvider>(context);
+    // Mengambil daftar produk yang sudah difilter (berdasarkan pencarian dan kategori)
     final products = provider.filteredProducts;
+    // Daftar kategori yang tersedia
     final categories = ['All', 'Elektronik', 'Aksesoris'];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: const Color(0xFFF8FAFC), // Latar belakang abu-abu terang
       appBar: AppBar(
         title: const Text(
           'Master Barang / Inventory',
@@ -38,9 +44,10 @@ class _MasterBarangScreenState extends State<MasterBarangScreen> {
         elevation: 0,
         centerTitle: false,
         actions: [
+          // Tombol tambah barang baru
           IconButton(
             icon: const Icon(Icons.add_box_outlined, color: Color(0xFFFF6B00)),
-            onPressed: () => _showAddEditProductModal(context),
+            onPressed: () => _showAddEditProductModal(context), // Tampilkan form modal
             tooltip: 'Tambah Barang Baru',
           ),
         ],
@@ -48,14 +55,16 @@ class _MasterBarangScreenState extends State<MasterBarangScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Search & Filter Header
+            // ==== Bagian Header: Pencarian & Filter Kategori ====
             Container(
               color: Colors.white,
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
               child: Column(
                 children: [
+                  // Baris 1: Kolom input pencarian, tombol scanner, dan tombol filter
                   Row(
                     children: [
+                      // Input teks untuk pencarian barang
                       Expanded(
                         child: Container(
                           height: 44,
@@ -65,7 +74,7 @@ class _MasterBarangScreenState extends State<MasterBarangScreen> {
                           ),
                           child: TextField(
                             controller: _searchController,
-                            onChanged: (val) => provider.setSearchQuery(val),
+                            onChanged: (val) => provider.setSearchQuery(val), // Update filter di provider
                             decoration: const InputDecoration(
                               hintText: 'Search product...',
                               hintStyle: TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
@@ -77,31 +86,34 @@ class _MasterBarangScreenState extends State<MasterBarangScreen> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      // Barcode Scan Icon Button
+
+                      // Tombol Scan Barcode (Membuka kamera)
                       Container(
                         width: 44,
                         height: 44,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFF6B00).withValues(alpha: 0.1),
+                          color: const Color(0xFFFF6B00).withValues(alpha: 0.1), // Oranye transparan
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: IconButton(
                           icon: const Icon(Icons.qr_code_scanner, color: Color(0xFFFF6B00), size: 22),
                           onPressed: () async {
+                            // Menavigasi ke ScannerScreen dan menunggu hasil
                             final scannedCode = await Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => const ScannerScreen()),
                             );
 
+                            // Jika ada kode yang didapat dari scanner
                             if (scannedCode != null) {
                               _searchController.text = scannedCode;
-                              provider.setSearchQuery(scannedCode);
+                              provider.setSearchQuery(scannedCode); // Langsung lakukan filter
                               
                               if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text('Pencarian: $scannedCode'),
-                                    backgroundColor: const Color(0xFF10B981),
+                                    backgroundColor: const Color(0xFF10B981), // Hijau
                                     duration: const Duration(seconds: 2),
                                   ),
                                 );
@@ -111,7 +123,7 @@ class _MasterBarangScreenState extends State<MasterBarangScreen> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      // Filter Button
+                      // Tombol "Filter" statis
                       Container(
                         height: 44,
                         padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -130,7 +142,8 @@ class _MasterBarangScreenState extends State<MasterBarangScreen> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  // Category Filter Chips
+
+                  // ==== Filter Kategori (Chips) ====
                   SizedBox(
                     height: 32,
                     child: ListView.separated(
@@ -139,9 +152,10 @@ class _MasterBarangScreenState extends State<MasterBarangScreen> {
                       separatorBuilder: (ctx, i) => const SizedBox(width: 8),
                       itemBuilder: (context, idx) {
                         final cat = categories[idx];
-                        final isSelected = provider.selectedCategory == cat;
+                        final isSelected = provider.selectedCategory == cat; // Cek apakah kategori terpilih
+                        
                         return GestureDetector(
-                          onTap: () => provider.setSelectedCategory(cat),
+                          onTap: () => provider.setSelectedCategory(cat), // Update kategori
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 200),
                             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
@@ -167,9 +181,10 @@ class _MasterBarangScreenState extends State<MasterBarangScreen> {
             ),
             const SizedBox(height: 8),
 
-            // Product List
+            // ==== Daftar Produk (List Produk) ====
             Expanded(
               child: products.isEmpty
+                  // Jika daftar kosong atau tidak ditemukan barang
                   ? Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -183,12 +198,13 @@ class _MasterBarangScreenState extends State<MasterBarangScreen> {
                         ],
                       ),
                     )
+                  // Jika ada barang, render ListView
                   : ListView.builder(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       itemCount: products.length,
                       itemBuilder: (context, index) {
                         final product = products[index];
-                        return _buildProductCard(context, product);
+                        return _buildProductCard(context, product); // Fungsi membuat kartu per produk
                       },
                     ),
             ),
@@ -198,6 +214,7 @@ class _MasterBarangScreenState extends State<MasterBarangScreen> {
     );
   }
 
+  // Fungsi utilitas untuk merender satu kartu produk
   Widget _buildProductCard(BuildContext context, Product product) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -216,10 +233,11 @@ class _MasterBarangScreenState extends State<MasterBarangScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Baris 1: Ikon, Informasi utama, menu opsi
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Product Barcode Icon Box
+              // Kotak untuk ikon barcode produk
               Container(
                 width: 60,
                 height: 60,
@@ -236,7 +254,7 @@ class _MasterBarangScreenState extends State<MasterBarangScreen> {
               ),
               const SizedBox(width: 12),
 
-              // Info Section
+              // Detail produk
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -277,7 +295,7 @@ class _MasterBarangScreenState extends State<MasterBarangScreen> {
                 ),
               ),
 
-              // More Options Popup Menu
+              // Tombol opsi (3 titik vertikal) untuk detail & edit
               PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert, color: Color(0xFF94A3B8)),
                 onSelected: (value) {
@@ -295,10 +313,10 @@ class _MasterBarangScreenState extends State<MasterBarangScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          const Divider(height: 1, color: Color(0xFFF1F5F9)),
+          const Divider(height: 1, color: Color(0xFFF1F5F9)), // Garis pemisah
           const SizedBox(height: 10),
 
-          // Stock & Location Footer Row
+          // Baris 2: Stok dan Lokasi
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -334,7 +352,7 @@ class _MasterBarangScreenState extends State<MasterBarangScreen> {
           ),
           const SizedBox(height: 12),
 
-          // Action Buttons: View Detail & Edit Product
+          // Baris 3: Tombol Aksi "View Detail" dan "Edit Product"
           Row(
             children: [
               Expanded(
@@ -377,16 +395,17 @@ class _MasterBarangScreenState extends State<MasterBarangScreen> {
     );
   }
 
+  // Fungsi untuk menampilkan form modal secara full layar (Bottom Sheet) untuk melihat detail barang
   void _showProductDetailModal(BuildContext context, Product product) {
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true,
+      isScrollControlled: true, // Memungkinkan modal lebih tinggi
       backgroundColor: Colors.transparent,
       builder: (context) {
         return Container(
           decoration: const BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)), // Sudut membulat di atas
           ),
           padding: const EdgeInsets.all(20),
           child: SingleChildScrollView(
@@ -394,6 +413,7 @@ class _MasterBarangScreenState extends State<MasterBarangScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Indikator drag / garis abu kecil di bagian atas modal
                 Center(
                   child: Container(
                     width: 40,
@@ -406,7 +426,7 @@ class _MasterBarangScreenState extends State<MasterBarangScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Title & SKU Header
+                // Judul Modal
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -420,13 +440,13 @@ class _MasterBarangScreenState extends State<MasterBarangScreen> {
                     ),
                     IconButton(
                       icon: const Icon(Icons.close, color: Colors.grey),
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () => Navigator.pop(context), // Tombol tutup modal
                     ),
                   ],
                 ),
                 const SizedBox(height: 8),
 
-                // Grid Details Card
+                // Grid detail data produk
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -472,7 +492,7 @@ class _MasterBarangScreenState extends State<MasterBarangScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // Barcode Section Preview
+                // Pratinjau Label Barcode
                 Center(
                   child: Container(
                     width: double.infinity,
@@ -489,14 +509,14 @@ class _MasterBarangScreenState extends State<MasterBarangScreen> {
                           style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 10),
-                        BarcodeWidget(code: product.sku, width: 240, height: 70),
+                        BarcodeWidget(code: product.sku, width: 240, height: 70), // Render barcode berdasarkan SKU
                       ],
                     ),
                   ),
                 ),
                 const SizedBox(height: 20),
 
-                // Scan History Timeline
+                // Riwayat Pemindaian (Scan History)
                 const Text(
                   'Scan History',
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
@@ -506,6 +526,7 @@ class _MasterBarangScreenState extends State<MasterBarangScreen> {
                   const Text('Belum ada riwayat scan', style: TextStyle(color: Colors.grey, fontSize: 12))
                 else
                   Column(
+                    // Menampilkan list data scan history yang ada di dalam model
                     children: product.scanHistory.map((hist) {
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 4),
@@ -536,6 +557,7 @@ class _MasterBarangScreenState extends State<MasterBarangScreen> {
     );
   }
 
+  // Fungsi pembantu untuk membuat grid pada detail modal
   Widget _buildDetailGridCell(String label, String value, {Color? valueColor}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -557,12 +579,16 @@ class _MasterBarangScreenState extends State<MasterBarangScreen> {
     );
   }
 
+  // Formatting tanggal ke string untuk ditampilkan di layar
   String _formatDate(DateTime dt) {
     return '${dt.day}/${dt.month}/${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
   }
 
+  // Fungsi untuk menampilkan pop-up/dialog "Tambah Baru" atau "Edit" Produk
   void _showAddEditProductModal(BuildContext context, {Product? product}) {
     final isEdit = product != null;
+    
+    // Inisialisasi controller data form. Jika mode edit, isi dengan data barang lama.
     final skuCtrl = TextEditingController(text: isEdit ? product.sku : 'BRG-00${DateTime.now().millisecond}');
     final nameCtrl = TextEditingController(text: isEdit ? product.name : '');
     final brandCtrl = TextEditingController(text: isEdit ? product.brand : '');
@@ -592,17 +618,20 @@ class _MasterBarangScreenState extends State<MasterBarangScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(context), // Batal
               child: const Text('Batal'),
             ),
             ElevatedButton(
               onPressed: () {
-                if (nameCtrl.text.isEmpty) return;
+                if (nameCtrl.text.isEmpty) return; // Validasi wajib diisi
                 final provider = Provider.of<WmsProvider>(context, listen: false);
+                
                 if (isEdit) {
+                  // Mode Edit: Update stok yang ada
                   final newStock = int.tryParse(stockCtrl.text) ?? product.stock;
                   provider.updateProductStock(product, newStock);
                 } else {
+                  // Mode Tambah Baru: Panggil provider untuk menambahkan data InboundRecord
                   provider.addProductInbound(
                     InboundRecord(
                       id: 'IN-${DateTime.now().millisecondsSinceEpoch}',
@@ -618,7 +647,8 @@ class _MasterBarangScreenState extends State<MasterBarangScreen> {
                     ),
                   );
                 }
-                Navigator.pop(context);
+                Navigator.pop(context); // Tutup dialog
+                // Tampilkan pesan sukses
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(isEdit ? 'Produk berhasil diperbarui!' : 'Produk berhasil ditambahkan!')),
                 );

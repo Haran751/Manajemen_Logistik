@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/wms_provider.dart';
 
+// Layar Pengeluaran Barang (Outbound) untuk memproses pengiriman barang keluar gudang
 class OutboundScreen extends StatefulWidget {
   const OutboundScreen({super.key});
 
@@ -10,15 +11,19 @@ class OutboundScreen extends StatefulWidget {
 }
 
 class _OutboundScreenState extends State<OutboundScreen> {
-  late TextEditingController _receiverCtrl;
-  late TextEditingController _destCtrl;
-  late TextEditingController _dateCtrl;
+  // Controller untuk form pembuatan pengiriman (shipment)
+  late TextEditingController _receiverCtrl; // Nama penerima
+  late TextEditingController _destCtrl; // Alamat tujuan
+  late TextEditingController _dateCtrl; // Tanggal pengiriman
 
   @override
   void initState() {
     super.initState();
+    // Mengambil data shipment yang sedang aktif dari provider
     final provider = Provider.of<WmsProvider>(context, listen: false);
     final ship = provider.activeShipment;
+
+    // Menginisialisasi controller dengan data shipment awal
     _receiverCtrl = TextEditingController(text: ship.receiverName);
     _destCtrl = TextEditingController(text: ship.destination);
     _dateCtrl = TextEditingController(text: ship.shipmentDate);
@@ -26,6 +31,7 @@ class _OutboundScreenState extends State<OutboundScreen> {
 
   @override
   void dispose() {
+    // Mematikan semua controller untuk mencegah memory leak saat layar ditutup
     _receiverCtrl.dispose();
     _destCtrl.dispose();
     _dateCtrl.dispose();
@@ -34,12 +40,13 @@ class _OutboundScreenState extends State<OutboundScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Membungkus layar dengan Consumer agar UI otomatis ter-update jika data di provider berubah
     return Consumer<WmsProvider>(
       builder: (context, provider, child) {
         final shipment = provider.activeShipment;
 
         return Scaffold(
-          backgroundColor: const Color(0xFFF8FAFC),
+          backgroundColor: const Color(0xFFF8FAFC), // Warna latar belakang terang
           appBar: AppBar(
             title: const Text(
               'Pengeluaran Barang',
@@ -55,7 +62,7 @@ class _OutboundScreenState extends State<OutboundScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 1. Create Shipment Form Card
+                  // ==== 1. Form Pembuatan Pengiriman (Create Shipment) ====
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -81,8 +88,10 @@ class _OutboundScreenState extends State<OutboundScreen> {
                           ),
                         ),
                         const SizedBox(height: 12),
+                        // Input untuk nama penerima (customer)
                         _buildInputField('Customer/Receiver', _receiverCtrl),
                         const SizedBox(height: 10),
+                        // Input Tujuan dan Tanggal bersebelahan
                         Row(
                           children: [
                             Expanded(child: _buildInputField('Destination', _destCtrl)),
@@ -95,7 +104,7 @@ class _OutboundScreenState extends State<OutboundScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // 2. Picking List Card
+                  // ==== 2. Daftar Barang yang Akan Diambil (Picking List) ====
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -122,13 +131,14 @@ class _OutboundScreenState extends State<OutboundScreen> {
                         ),
                         const SizedBox(height: 12),
 
-                        // List of items to pick
+                        // Menampilkan list barang (item) yang harus dipick (diambil dari rak)
                         Column(
                           children: List.generate(shipment.items.length, (index) {
                             final item = shipment.items[index];
                             return Container(
                               margin: const EdgeInsets.only(bottom: 8),
                               decoration: BoxDecoration(
+                                // Jika sudah dipick, ubah warna background jadi hijau muda
                                 color: item.isPicked ? const Color(0xFFF0FDF4) : const Color(0xFFF8FAFC),
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
@@ -137,9 +147,9 @@ class _OutboundScreenState extends State<OutboundScreen> {
                               ),
                               child: CheckboxListTile(
                                 value: item.isPicked,
-                                activeColor: const Color(0xFFFF6B00),
+                                activeColor: const Color(0xFFFF6B00), // Warna ceklis
                                 onChanged: (val) {
-                                  provider.toggleItemPicked(index);
+                                  provider.toggleItemPicked(index); // Mengubah status picked/belum
                                 },
                                 title: Text(
                                   item.product.name,
@@ -153,7 +163,7 @@ class _OutboundScreenState extends State<OutboundScreen> {
                                   'Quantity: ${item.quantity} | Rack: ${item.rackLocation}',
                                   style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
                                 ),
-                                controlAffinity: ListTileControlAffinity.leading,
+                                controlAffinity: ListTileControlAffinity.leading, // Letak checkbox di kiri
                                 dense: true,
                               ),
                             );
@@ -161,7 +171,7 @@ class _OutboundScreenState extends State<OutboundScreen> {
                         ),
                         const SizedBox(height: 12),
 
-                        // Mark Picked Item Action Button
+                        // Tombol untuk menandai semua item di keranjang sebagai telah diambil (Mark Picked)
                         SizedBox(
                           width: double.infinity,
                           height: 40,
@@ -188,9 +198,10 @@ class _OutboundScreenState extends State<OutboundScreen> {
                         ),
                         const SizedBox(height: 12),
 
-                        // Auto Stock Update Toggle Indicator
+                        // Status & Tombol Potong Stok Otomatis ke Master Barang
                         Row(
                           children: [
+                            // Ikon indikator sukses (centang) atau belum (bulat kosong)
                             Icon(
                               shipment.isStockUpdated ? Icons.check_circle : Icons.radio_button_unchecked,
                               color: shipment.isStockUpdated ? const Color(0xFF10B981) : const Color(0xFFFF6B00),
@@ -200,7 +211,7 @@ class _OutboundScreenState extends State<OutboundScreen> {
                             Expanded(
                               child: Text(
                                 shipment.isStockUpdated
-                                    ? 'Update Stock Automatically (Ter-update)'
+                                    ? 'Update Stock Automatically (Ter-update)' // Sudah terpotong stoknya
                                     : 'Update Stock Automatically',
                                 style: TextStyle(
                                   fontSize: 12,
@@ -209,10 +220,11 @@ class _OutboundScreenState extends State<OutboundScreen> {
                                 ),
                               ),
                             ),
+                            // Jika belum diupdate, tampilkan tombol untuk mengupdate stok
                             if (!shipment.isStockUpdated)
                               TextButton(
                                 onPressed: () {
-                                  final success = provider.updateStockFromOutbound();
+                                  final success = provider.updateStockFromOutbound(); // Potong stok asli
                                   if (success) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
@@ -231,7 +243,7 @@ class _OutboundScreenState extends State<OutboundScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // 3. Surat Jalan Document Preview Card (As in Mockup 4)
+                  // ==== 3. Pratinjau Dokumen Surat Jalan ====
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
@@ -250,6 +262,7 @@ class _OutboundScreenState extends State<OutboundScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Header dokumen surat jalan
                         Center(
                           child: Column(
                             children: [
@@ -267,7 +280,7 @@ class _OutboundScreenState extends State<OutboundScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Receiver Details Box
+                        // Informasi penerima di dalam surat jalan
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
@@ -291,7 +304,7 @@ class _OutboundScreenState extends State<OutboundScreen> {
                         ),
                         const SizedBox(height: 14),
 
-                        // Item List Table Header
+                        // Tabel Header untuk list barang surat jalan
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                           color: const Color(0xFFF1F5F9),
@@ -304,7 +317,7 @@ class _OutboundScreenState extends State<OutboundScreen> {
                           ),
                         ),
 
-                        // Item List Table Rows
+                        // Isi Tabel (Baris per barang)
                         Column(
                           children: shipment.items.map((item) {
                             return Padding(
@@ -341,7 +354,7 @@ class _OutboundScreenState extends State<OutboundScreen> {
                         ),
                         const SizedBox(height: 20),
 
-                        // Action Buttons: Download PDF, Share, Print
+                        // Tombol Aksi Dokumen Surat Jalan (Download PDF, Share, Print)
                         Row(
                           children: [
                             Expanded(
@@ -370,7 +383,7 @@ class _OutboundScreenState extends State<OutboundScreen> {
                                 child: OutlinedButton(
                                   onPressed: () => _handleSuratJalanAction('Share Document'),
                                   style: OutlinedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF1E293B),
+                                    backgroundColor: const Color(0xFF1E293B), // Background gelap
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                   ),
                                   child: const Text(
@@ -388,7 +401,7 @@ class _OutboundScreenState extends State<OutboundScreen> {
                                 child: OutlinedButton(
                                   onPressed: () => _handleSuratJalanAction('Print Surat Jalan'),
                                   style: OutlinedButton.styleFrom(
-                                    side: const BorderSide(color: Color(0xFFCBD5E1)),
+                                    side: const BorderSide(color: Color(0xFFCBD5E1)), // Border transparan
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                   ),
                                   child: const Text(
@@ -413,6 +426,7 @@ class _OutboundScreenState extends State<OutboundScreen> {
     );
   }
 
+  // Fungsi utilitas untuk mem-build form input dengan style yang sama
   Widget _buildInputField(String label, TextEditingController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -423,7 +437,7 @@ class _OutboundScreenState extends State<OutboundScreen> {
         ),
         const SizedBox(height: 4),
         Container(
-          height: 38,
+          height: 38, // Ukuran input yang ringkas
           decoration: BoxDecoration(
             color: const Color(0xFFF8FAFC),
             borderRadius: BorderRadius.circular(8),
@@ -443,6 +457,7 @@ class _OutboundScreenState extends State<OutboundScreen> {
     );
   }
 
+  // Fungsi untuk mensimulasikan aksi pencetakan dokumen/PDF dengan SnackBar
   void _handleSuratJalanAction(String actionName) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

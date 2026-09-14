@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
+// Layar profil pengguna (ProfileScreen) untuk menampilkan informasi terkait gudang dan pengguna WMS
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: const Color(0xFFF8FAFC), // Warna latar belakang abu-abu terang
       appBar: AppBar(
         title: const Text(
           'Profil Gudang',
@@ -22,28 +23,33 @@ class ProfileScreen extends StatelessWidget {
           child: Column(
             children: [
               const SizedBox(height: 10),
-              // User Avatar & Name
+              
+              // ==== Bagian Header: Avatar dan Nama Pengguna / Gudang ====
               const CircleAvatar(
                 radius: 40,
-                backgroundColor: Color(0xFFFF6B00),
+                backgroundColor: Color(0xFFFF6B00), // Latar belakang avatar warna oranye WMS
                 child: Text(
-                  'GJ',
+                  'GJ', // Inisial "Gudang Jakarta"
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),
               const SizedBox(height: 12),
+              
+              // Nama Gudang
               const Text(
                 'Gudang Utama Jakarta',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
               ),
               const SizedBox(height: 4),
+              
+              // Jabatan/Role Pengguna
               const Text(
                 'Kepala Gudang: Admin WMS System',
                 style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
               ),
               const SizedBox(height: 24),
 
-              // Warehouse Information Card
+              // ==== Kartu Informasi Lengkap Gudang ====
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -51,7 +57,7 @@ class ProfileScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.04),
+                      color: Colors.black.withValues(alpha: 0.04), // Efek bayangan halus
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -59,6 +65,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
+                    // Menampilkan daftar item profil (Kode, Alamat, Telepon, Versi WMS)
                     _buildProfileItem(Icons.warehouse_outlined, 'Kode Gudang', 'WH-JKT-001'),
                     const Divider(height: 20),
                     _buildProfileItem(Icons.location_on_outlined, 'Alamat', 'Jl. Kawasan Industri No. 45, Jakarta'),
@@ -71,23 +78,24 @@ class ProfileScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
-              // System Actions
+              // ==== Tombol Aksi Sistem (Keluar / Logout) ====
               SizedBox(
                 width: double.infinity,
                 height: 44,
                 child: OutlinedButton.icon(
                   onPressed: () {
+                    // Tampilkan notifikasi (snackbar) bahwa sedang logout saat tombol ditekan
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Logging out WMS session...')),
                     );
                   },
-                  icon: const Icon(Icons.logout, color: Color(0xFFE11D48)),
+                  icon: const Icon(Icons.logout, color: Color(0xFFE11D48)), // Ikon logout merah
                   label: const Text(
                     'Keluar Akun WMS',
                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFFE11D48)),
                   ),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Color(0xFFFECACA)),
+                    side: const BorderSide(color: Color(0xFFFECACA)), // Border warna merah muda
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
@@ -99,27 +107,30 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  // ==== Fungsi Utilitas (Helper) untuk membuat baris detail profil ====
   Widget _buildProfileItem(IconData icon, String title, String value) {
     return Row(
       children: [
+        // Wadah latar belakang abu-abu terang untuk ikon
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: const Color(0xFFF1F5F9),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, color: const Color(0xFFFF6B00), size: 20),
+          child: Icon(icon, color: const Color(0xFFFF6B00), size: 20), // Ikon berwarna oranye
         ),
         const SizedBox(width: 12),
+        // Kolom untuk Judul Label dan Nilainya (value)
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
+              Text(title, style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))), // Teks label abu-abu kecil
               const SizedBox(height: 2),
               Text(
                 value,
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)), // Nilai data
               ),
             ],
           ),

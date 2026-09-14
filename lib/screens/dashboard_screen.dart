@@ -3,26 +3,30 @@ import 'package:provider/provider.dart';
 import '../providers/wms_provider.dart';
 import '../widgets/inventory_chart.dart';
 
+// Layar utama (Dashboard) yang menampilkan ringkasan informasi gudang
 class DashboardScreen extends StatelessWidget {
+  // Callback function opsional untuk navigasi ke tab lain melalui bottom navigation
   final Function(int)? onNavigateTab;
 
   const DashboardScreen({super.key, this.onNavigateTab});
 
   @override
   Widget build(BuildContext context) {
+    // Consumer digunakan untuk mendengarkan perubahan data dari WmsProvider
     return Consumer<WmsProvider>(
       builder: (context, provider, child) {
+        // Mengambil daftar barang yang stoknya menipis (di bawah batas minimum)
         final lowStockItems = provider.lowStockProducts;
 
         return Scaffold(
-          backgroundColor: const Color(0xFFF8FAFC),
+          backgroundColor: const Color(0xFFF8FAFC), // Warna latar abu-abu terang
           body: SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Top Warehouse Header
+                  // ==== Header Dashboard (Nama Gudang & Profil) ====
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -50,12 +54,14 @@ class DashboardScreen extends StatelessWidget {
                       ),
                       Row(
                         children: [
+                          // Ikon profil pengguna
                           const CircleAvatar(
                             radius: 20,
                             backgroundColor: Color(0xFFE2E8F0),
                             child: Icon(Icons.person, color: Color(0xFF475569)),
                           ),
                           const SizedBox(width: 10),
+                          // Ikon Notifikasi dengan badge (angka jumlah stok rendah)
                           Stack(
                             children: [
                               Container(
@@ -71,6 +77,7 @@ class DashboardScreen extends StatelessWidget {
                                   size: 22,
                                 ),
                               ),
+                              // Badge merah di sudut atas yang menampilkan jumlah alert
                               Positioned(
                                 right: 6,
                                 top: 6,
@@ -98,7 +105,8 @@ class DashboardScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
 
-                  // 4 Summary Metrics Cards (2x2 Grid)
+                  // ==== 4 Kartu Ringkasan Metrik (2x2 Grid) ====
+                  // Baris pertama metrik: Total Stock & Barang Masuk
                   Row(
                     children: [
                       Expanded(
@@ -106,7 +114,7 @@ class DashboardScreen extends StatelessWidget {
                           icon: Icons.inventory_2_outlined,
                           iconColor: const Color(0xFFFF6B00),
                           label: 'Total Stock',
-                          value: '${provider.totalStock}',
+                          value: '${provider.totalStock}', // Mengambil total dari provider
                           subtitle: '',
                         ),
                       ),
@@ -116,13 +124,14 @@ class DashboardScreen extends StatelessWidget {
                           icon: Icons.output_outlined,
                           iconColor: const Color(0xFFFF6B00),
                           label: 'Barang Masuk\nHari Ini',
-                          value: '${provider.inboundToday}',
+                          value: '${provider.inboundToday}', // Mengambil jumlah inbound hari ini
                           subtitle: 'Units',
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
+                  // Baris kedua metrik: Barang Keluar & Low Stock Alert
                   Row(
                     children: [
                       Expanded(
@@ -130,7 +139,7 @@ class DashboardScreen extends StatelessWidget {
                           icon: Icons.shortcut_outlined,
                           iconColor: const Color(0xFFFF6B00),
                           label: 'Barang Keluar\nHari Ini',
-                          value: '${provider.outboundToday}',
+                          value: '${provider.outboundToday}', // Mengambil jumlah outbound hari ini
                           subtitle: 'Units',
                         ),
                       ),
@@ -140,20 +149,20 @@ class DashboardScreen extends StatelessWidget {
                           icon: Icons.warning_amber_rounded,
                           iconColor: const Color(0xFFFF3B30),
                           label: 'Low Stock\nAlert',
-                          value: '${lowStockItems.length}',
+                          value: '${lowStockItems.length}', // Menampilkan jumlah barang yang perlu direstock
                           subtitle: 'Items',
-                          isAlert: true,
+                          isAlert: true, // Menandai sebagai peringatan dengan warna merah
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 20),
 
-                  // Inventory Movement Chart Section
+                  // ==== Grafik Pergerakan Barang Mingguan (Inbound vs Outbound) ====
                   WeeklyMovementChart(data: provider.weeklyMovement),
                   const SizedBox(height: 20),
 
-                  // Stok Menipis Notification Section
+                  // ==== Bagian Peringatan Stok Menipis ====
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
@@ -201,6 +210,7 @@ class DashboardScreen extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 12),
+                        // Jika tidak ada barang yang stoknya menipis
                         if (lowStockItems.isEmpty)
                           const Padding(
                             padding: EdgeInsets.symmetric(vertical: 12),
@@ -210,6 +220,7 @@ class DashboardScreen extends StatelessWidget {
                             ),
                           )
                         else
+                          // Jika ada barang dengan stok menipis, tampilkan daftarnya
                           Column(
                             children: lowStockItems.map((item) {
                               return Container(
@@ -233,7 +244,7 @@ class DashboardScreen extends StatelessWidget {
                                         const SizedBox(width: 6),
                                         Expanded(
                                           child: Text(
-                                            'Product: ${item.name}',
+                                            'Product: ${item.name}', // Nama barang
                                             style: const TextStyle(
                                               fontSize: 13,
                                               fontWeight: FontWeight.bold,
@@ -241,6 +252,7 @@ class DashboardScreen extends StatelessWidget {
                                             ),
                                           ),
                                         ),
+                                        // Label jumlah stok saat ini berwarna merah
                                         Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                           decoration: BoxDecoration(
@@ -260,20 +272,21 @@ class DashboardScreen extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 6),
                                     Text(
-                                      'Lokasi: ${item.rackLocation} | Rekomendasi: Restock 50 Unit',
+                                      'Lokasi: ${item.rackLocation} | Rekomendasi: Restock 50 Unit', // Info lokasi rak
                                       style: const TextStyle(
                                         fontSize: 11,
                                         color: Color(0xFF64748B),
                                       ),
                                     ),
                                     const SizedBox(height: 8),
+                                    // Tombol untuk merestock barang (mengarahkan ke tab Inbound)
                                     SizedBox(
                                       width: double.infinity,
                                       height: 32,
                                       child: OutlinedButton.icon(
                                         onPressed: () {
                                           if (onNavigateTab != null) {
-                                            onNavigateTab!(2); // Navigate to Inbound Tab
+                                            onNavigateTab!(2); // Mengarahkan navigasi ke tab Inbound (Index 2)
                                           }
                                         },
                                         icon: const Icon(Icons.add, size: 16, color: Color(0xFFFF6B00)),
@@ -311,13 +324,14 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
+  // Fungsi utilitas untuk membangun widget kartu ringkasan/metrik
   Widget _buildSummaryCard({
     required IconData icon,
     required Color iconColor,
     required String label,
     required String value,
     required String subtitle,
-    bool isAlert = false,
+    bool isAlert = false, // Jika true, batas kartu akan berwarna merah (untuk peringatan)
   }) {
     return Container(
       padding: const EdgeInsets.all(14),
@@ -338,6 +352,7 @@ class DashboardScreen extends StatelessWidget {
         children: [
           Row(
             children: [
+              // Latar belakang ikon yang sedikit transparan sesuai warna ikon
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
@@ -347,6 +362,7 @@ class DashboardScreen extends StatelessWidget {
                 child: Icon(icon, color: iconColor, size: 20),
               ),
               const SizedBox(width: 8),
+              // Judul kartu metrik
               Expanded(
                 child: Text(
                   label,
@@ -361,6 +377,7 @@ class DashboardScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
+          // Nilai (Value) yang besar beserta subtitlenya (misalnya unit)
           Row(
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,

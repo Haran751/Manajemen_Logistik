@@ -1,58 +1,57 @@
-# WMS Gudang Utama - Manajemen Logistik
+# Manajemen Logistik WMS (Warehouse Management System)
 
-A comprehensive Warehouse Management System (WMS) application built with Flutter. This application streamlines inventory management, inbound receiving, and outbound shipping processes with a modern and intuitive user interface.
+A Flutter-based Warehouse Management System (WMS) application designed to manage inventory, track inbound and outbound items, and facilitate real-time barcode scanning operations. The system provides a centralized dashboard to monitor stock levels, low-stock alerts, and weekly item movements.
 
-## Key Features
+## Quick Start
 
-*   **Interactive Dashboard:** Visualizes weekly goods movement (inbound versus outbound) and key operational metrics.
-*   **Master Barang (Inventory):** Browse, search, and manage all registered products in the warehouse.
-*   **Inbound (Penerimaan Barang):** Scan incoming products using the device's built-in camera, automatically fetching SKU data and updating stock quantities.
-*   **Outbound (Pengeluaran Barang):** Manage and record outgoing products efficiently.
-*   **Real Barcode Scanner:** Fully functional, hardware-accelerated barcode and QR code scanner using the `mobile_scanner` package for rapid data entry.
-*   **Smooth UI Animations:** Fluid page transitions and scrolling physics for a premium user experience.
+1. Ensure Flutter is installed on your local machine.
+2. Clone this repository.
+3. Install the required dependencies:
+   ```bash
+   flutter pub get
+   ```
+4. Run the application on an emulator or physical device:
+   ```bash
+   flutter run
+   ```
 
-## Getting Started
+## Commands
 
-### Prerequisites
+| Command | Description |
+|---------|-------------|
+| `flutter pub get` | Install all required dependencies |
+| `flutter run` | Start the development application |
+| `flutter clean` | Clean the build directory |
+| `flutter build apk` | Create a production APK build for Android |
+| `flutter build ios` | Create a production build for iOS |
+| `flutter test` | Run unit and widget tests |
 
-*   Flutter SDK (^3.12.2 or newer)
-*   Dart SDK
-*   Android Studio / Xcode (for building to physical devices or emulators)
+## Architecture
 
-### Installation
+This project is built using Flutter and follows a structured architectural pattern to separate logic from UI.
 
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/Haran751/Manajemen_Logistik.git
-    cd Manajemen_Logistik
-    ```
+### State Management
+The application uses the `provider` package for global state management. `WmsProvider` is the core class responsible for handling data operations such as adding products, updating stock limits, managing outbound shipment item statuses, and recording scan histories.
 
-2.  **Install dependencies:**
-    ```bash
-    flutter pub get
-    ```
+### UI Structure
+The application is organized into several key directories:
+- `/lib/models/`: Contains data models such as `Product`, `InboundRecord`, and `OutboundShipment`.
+- `/lib/providers/`: Contains `WmsProvider` which holds the application state.
+- `/lib/screens/`: Contains the main application pages:
+  - `DashboardScreen`: Shows high-level metrics and low-stock alerts.
+  - `MasterBarangScreen`: Lists all inventory with search and filter capabilities.
+  - `InboundScreen`: Handles the process of receiving new stock.
+  - `OutboundScreen`: Manages dispatching items and marking them as picked.
+  - `ScannerScreen`: Integrates the device camera for actual barcode scanning.
+  - `ProfileScreen`: Displays warehouse and user information.
+- `/lib/widgets/`: Contains reusable UI components, such as `BarcodeWidget` (custom painter for rendering barcodes) and `WeeklyMovementChart`.
 
-3.  **Run the application:**
-    ```bash
-    flutter run
-    ```
-    *(Note: To test the barcode scanner functionality, you must run the application on a physical device, as emulators typically do not have native camera hardware support.)*
+### Navigation
+The main navigation uses a `BottomNavigationBar` of type `fixed` combined with a `PageView` and a `PageController`. This ensures smooth transition animations between different application modules without unnecessarily pushing and popping screens to the navigation stack.
 
-## Technology Stack
+## Contributing
 
-*   **Framework:** [Flutter](https://flutter.dev/)
-*   **State Management:** `provider`
-*   **Barcode Scanning:** `mobile_scanner`
-*   **UI/UX:** Custom Material 3 Design with `PageView` transitions.
-
-## Building the APK
-
-To generate a release APK for Android deployment:
-
-```bash
-flutter build apk
-```
-The compiled APK will be located at `build/app/outputs/flutter-apk/app-release.apk`.
-
----
-*Developed for modern logistics and warehouse management.*
+1. Create a new branch for each feature or bug fix.
+2. Keep UI widgets clean and delegate business logic to `WmsProvider`.
+3. If adding a new package, ensure it is necessary and document its usage.
+4. Run `flutter format .` and resolve all analyzer warnings before submitting a pull request.
