@@ -2,6 +2,11 @@
 
 A Flutter-based Warehouse Management System (WMS) application designed to manage inventory, track inbound and outbound items, and facilitate real-time barcode scanning operations. The system provides a centralized dashboard to monitor stock levels, low-stock alerts, and weekly item movements.
 
+## 🚀 Download Application (Release)
+You can directly download and use the compiled applications from the **[GitHub Releases Page](https://github.com/Haran751/Manajemen_Logistik/releases/tag/v1.0)**:
+- **Android:** Download the `app-release.apk` file and install it on your Android device.
+- **Windows:** Download the `windows-app.zip` file, extract the ZIP contents to a folder, and double-click `rans.exe` to run the application.
+
 ## Quick Start
 
 1. Ensure Flutter is installed on your local machine.
