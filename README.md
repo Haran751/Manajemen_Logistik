@@ -4,8 +4,8 @@ A Flutter-based Warehouse Management System (WMS) application designed to manage
 
 ## Download Application (Release)
 You can directly download and use the compiled applications from the **[GitHub Releases Page](https://github.com/Haran751/Manajemen_Logistik/releases/tag/v1.0)**:
-- **Android:** Download the `app-release.apk` file and install it on your Android device.
-- **Windows:** Download the `windows-app.zip` file, extract the ZIP contents to a folder, and double-click `rans.exe` to run the application.
+- **Android:** Download the `WMS.apk` file and install it on your Android device.
+- **Windows:** Download the `WMS.exe` file, and run the application
 
 ## Quick Start
 
